@@ -111,7 +111,7 @@ void AEnemy::DirectionalHitReact(const FVector& ImpactPoint)
 	                                     GetActorLocation() + ToHit * 60.f,5.f,FColor::Green,5.f);*/
 }
 
-void AEnemy::GetHit(const FVector& ImpactPoint)
+void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 {
 	DirectionalHitReact(ImpactPoint);
 

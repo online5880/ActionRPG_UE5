@@ -24,9 +24,11 @@ void ABreakableActor::BeginPlay()
 	
 }
 
-void ABreakableActor::GetHit(const FVector& ImpactPoint)
+void ABreakableActor::GetHit_Implementation(const FVector& ImpactPoint)
 {
+	IHitInterface::GetHit_Implementation(ImpactPoint);
 }
+
 
 // Called every frame
 void ABreakableActor::Tick(float DeltaTime)
