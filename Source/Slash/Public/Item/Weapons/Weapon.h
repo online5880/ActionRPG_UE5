@@ -33,6 +33,8 @@ protected:
 	UFUNCTION()
 	void OnBoxEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void CreateFields(const FVector& FieldLocation);
 private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	USoundBase* EquipSound;
@@ -48,5 +50,4 @@ private:
 
 public:
 	FORCEINLINE UBoxComponent* GetWeaponBox() const {return WeaponBox;}
-	
 };
