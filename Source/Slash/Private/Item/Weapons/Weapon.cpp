@@ -71,16 +71,12 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if(OtherActor == this) {return;}
+	
 	const FVector Start = BoxTraceStart->GetComponentLocation();
 	const FVector End = BoxTraceEnd->GetComponentLocation();
-
-	TArray<AActor*> ActorsToIgnore;
-	ActorsToIgnore.Add(this);
-
-	for(AActor* Actor : IgnoreActors)
-	{
-		ActorsToIgnore.AddUnique(Actor);
-	}
+	
+	IgnoreActors.Add(this);
 	
 	FHitResult BoxHit;
 	
@@ -92,14 +88,16 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 		BoxTraceStart->GetComponentRotation(),
 		ETraceTypeQuery::TraceTypeQuery1,
 		false,
-		ActorsToIgnore,
-		EDrawDebugTrace::None,
+		IgnoreActors,
+		EDrawDebugTrace::ForDuration,
 		BoxHit,
 		true
 		);
 	
 	if(BoxHit.GetActor())
 	{
+		GEngine->AddOnScreenDebugMessage(1,5.f,FColor::Orange,FString::Printf(TEXT("%s"),*BoxHit.GetActor()->GetName()));
+
 		IHitInterface* HitInterface = Cast<IHitInterface>(BoxHit.GetActor());
 		if(HitInterface)
 		{
