@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "Slash/Public/Item.h"
 
+#include "NiagaraComponent.h"
 #include "Characters/SlashCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Slash/DebugMacro.h"
@@ -21,6 +22,9 @@ AItem::AItem() :
 
 	Sphere->OnComponentBeginOverlap.AddDynamic(this,&AItem::OnSphereOverlap);
 	Sphere->OnComponentEndOverlap.AddDynamic(this,&AItem::OnSphereEndOverlap);
+
+	EmbersEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Embers"));
+	EmbersEffect->SetupAttachment(GetRootComponent());
 }
 
 // Called every frame
