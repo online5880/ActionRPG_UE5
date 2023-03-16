@@ -3,6 +3,7 @@
 
 #include "Enemy/Enemy.h"
 
+#include "Component/AttributeComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -19,6 +20,8 @@ AEnemy::AEnemy()
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera,ECR_Ignore);
 	GetMesh()->SetGenerateOverlapEvents(true);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera,ECR_Ignore);
+
+	Attribute = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attributes"));
 
 }
 
