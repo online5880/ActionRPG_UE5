@@ -27,7 +27,6 @@ private:
 	float MaxHealth;
 
 public:
-	
-	FORCEINLINE float GetMaxHealth() const {return MaxHealth;}
-		
+	void ReceiveDamage(float Damage);
+	float GetHealthPercent() const;
 };

@@ -20,7 +20,6 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
 	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
 protected:
 	virtual void BeginPlay() override;
@@ -29,12 +28,12 @@ protected:
 	 * Play montage functions
 	 */
 	void PlayHitReactMontage(const FName& SectionName);
-
 	void DirectionalHitReact(const FVector& ImpactPoint);
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 private:
 
 	UPROPERTY(VisibleAnywhere)
-	UAttributeComponent* Attribute;
+	UAttributeComponent* Attributes;
 
 	UPROPERTY(VisibleAnywhere)
 	UHealthBarComponent* HealthBarWidget;
