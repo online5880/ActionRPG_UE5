@@ -26,5 +26,8 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Actor Attribute")
 	float MaxHealth;
 
+public:
+	
+	FORCEINLINE float GetMaxHealth() const {return MaxHealth;}
 		
 };
