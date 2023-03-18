@@ -28,6 +28,7 @@ protected:
 	 * Play montage functions
 	 */
 	void PlayHitReactMontage(const FName& SectionName);
+	void Die();
 	void DirectionalHitReact(const FVector& ImpactPoint);
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 private:
@@ -43,6 +44,9 @@ private:
 	 */
 	UPROPERTY(EditDefaultsOnly,Category= "Montages")
 	UAnimMontage* HitReactMontage;
+
+	UPROPERTY(EditDefaultsOnly,Category= "Montages")
+	UAnimMontage* DeathMontage;
 
 	UPROPERTY(EditAnywhere,Category= "Sounds")
 	USoundBase* HitSound;
