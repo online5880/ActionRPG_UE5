@@ -3,6 +3,7 @@
 
 #include "Enemy/Enemy.h"
 
+#include "AIController.h"
 #include "Component/AttributeComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -40,6 +41,22 @@ void AEnemy::BeginPlay()
 	if(HealthBarWidget)
 	{
 		HealthBarWidget->SetVisibility(false);	
+	}
+
+	EnemyController = Cast<AAIController>(GetController());
+	if(EnemyController && PatrolTarget)
+	{
+		FAIMoveRequest MoveRequest;
+		MoveRequest.SetGoalActor(PatrolTarget);
+		MoveRequest.SetAcceptanceRadius(15.f);
+		FNavPathSharedPtr NavPath;
+		EnemyController->MoveTo(MoveRequest, &NavPath);
+		TArray<FNavPathPoint>& PathPoints = NavPath->GetPathPoints();
+		for(const auto Point : PathPoints)
+		{
+			const FVector& Location = Point.Location;
+			DrawDebugSphere(GetWorld(),Location,12.f,12,FColor::Green,false,10.f);
+		}
 	}
 }
 
