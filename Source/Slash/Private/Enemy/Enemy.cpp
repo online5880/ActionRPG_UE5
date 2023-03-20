@@ -44,7 +44,7 @@ void AEnemy::BeginPlay()
 	}
 
 	EnemyController = Cast<AAIController>(GetController());
-	if(EnemyController && PatrolTarget)
+	if (EnemyController && PatrolTarget)
 	{
 		FAIMoveRequest MoveRequest;
 		MoveRequest.SetGoalActor(PatrolTarget);
@@ -52,10 +52,10 @@ void AEnemy::BeginPlay()
 		FNavPathSharedPtr NavPath;
 		EnemyController->MoveTo(MoveRequest, &NavPath);
 		TArray<FNavPathPoint>& PathPoints = NavPath->GetPathPoints();
-		for(const auto Point : PathPoints)
+		for (auto& Point : PathPoints)
 		{
 			const FVector& Location = Point.Location;
-			DrawDebugSphere(GetWorld(),Location,12.f,12,FColor::Green,false,10.f);
+			DrawDebugSphere(GetWorld(), Location, 12.f, 12, FColor::Green, false, 10.f);
 		}
 	}
 }
@@ -106,6 +106,14 @@ void AEnemy::Die()
 	SetLifeSpan(3.f);
 }
 
+bool AEnemy::InTargetRange(AActor* Target, double Radius)
+{
+	const double DistanceToTarget = (Target->GetActorLocation() - GetActorLocation()).Size();
+	DRAW_SPHERE_SingleFrame(GetActorLocation());
+	DRAW_SPHERE_SingleFrame(Target->GetActorLocation());
+	return DistanceToTarget <= Radius;
+}
+
 // Called every frame
 void AEnemy::Tick(float DeltaTime)
 {
@@ -113,13 +121,42 @@ void AEnemy::Tick(float DeltaTime)
 
 	if(CombatTarget)
 	{
-		const double DistanceToTarget = (CombatTarget->GetActorLocation() - GetActorLocation()).Size();
-		if(DistanceToTarget > CombatRadius)
+		if(!InTargetRange(CombatTarget,CombatRadius))
 		{
 			CombatTarget = nullptr;
+			if(HealthBarWidget)
+			{
+				HealthBarWidget->SetVisibility(false);
+			}
 		}
 	}
-
+	if(PatrolTarget)
+	{
+		if(InTargetRange(PatrolTarget,PatrolRadius) && EnemyController)
+		{
+			TArray<AActor*> ValidTargets;
+			for(const auto Target : PatrolTargets)
+			{
+				if(Target != PatrolTarget)
+				{
+					ValidTargets.AddUnique(Target);
+				}
+			}
+			
+			const int32 NumPatrolTargets = ValidTargets.Num();
+			if(NumPatrolTargets > 0)
+			{
+				const int32 TargetSelection = FMath::RandRange(0,NumPatrolTargets-1);
+				AActor* Target = ValidTargets[TargetSelection];
+				PatrolTarget = Target;
+				
+				FAIMoveRequest MoveRequest;
+				MoveRequest.SetGoalActor(PatrolTarget);
+				MoveRequest.SetAcceptanceRadius(15.f);
+				EnemyController->MoveTo(MoveRequest);
+			}
+		}
+	}
 }
 
 // Called to bind functionality to input

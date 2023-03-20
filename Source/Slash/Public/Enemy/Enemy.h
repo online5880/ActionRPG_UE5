@@ -31,6 +31,8 @@ protected:
 	 */
 	void PlayHitReactMontage(const FName& SectionName);
 	void Die();
+	bool InTargetRange(AActor* Target, double Radius);
+	
 	void DirectionalHitReact(const FVector& ImpactPoint);
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -64,7 +66,7 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	double CombatRadius = 500.f;
-
+	
 	/**
 	 * Navigation
 	 */
@@ -77,4 +79,7 @@ private:
 
 	UPROPERTY(EditInstanceOnly, Category = "AI Navigation")
 	TArray<AActor*> PatrolTargets;
+
+	UPROPERTY(EditAnywhere)
+	double PatrolRadius = 200.f;
 };
