@@ -32,7 +32,11 @@ protected:
 	void PlayHitReactMontage(const FName& SectionName);
 	void Die();
 	bool InTargetRange(AActor* Target, double Radius);
-	
+	void MoveToTarget(AActor* Target);
+	AActor* ChoosePatrolTarget();
+	void CheckCombatTarget();
+	void CheckPatrolTarget();
+
 	void DirectionalHitReact(const FVector& ImpactPoint);
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -82,4 +86,13 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	double PatrolRadius = 200.f;
+
+	FTimerHandle PatrolTimer;
+	void PatrolTimerFinished();
+
+	UPROPERTY(EditAnywhere, Category = "AI Navigation")
+	float WaitMin = 5.f;
+	
+	UPROPERTY(EditAnywhere, Category = "AI Navigation")
+	float WaitMax = 10.f;
 };
