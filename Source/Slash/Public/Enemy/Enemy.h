@@ -9,6 +9,7 @@
 #include "Enemy.generated.h"
 
 
+class UPawnSensingComponent;
 class AAIController;
 class UAttributeComponent;
 class UHealthBarComponent;
@@ -25,17 +26,22 @@ public:
 	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
 protected:
 	virtual void BeginPlay() override;
-
-	/**
-	 * Play montage functions
-	 */
-	void PlayHitReactMontage(const FName& SectionName);
+	
 	void Die();
 	bool InTargetRange(AActor* Target, double Radius);
 	void MoveToTarget(AActor* Target);
 	AActor* ChoosePatrolTarget();
 	void CheckCombatTarget();
 	void CheckPatrolTarget();
+	
+	UFUNCTION()
+	void PawnSee(APawn* SeePawn);
+	
+	/**
+	 * Play montage functions
+	 */
+	void PlayHitReactMontage(const FName& SectionName);
+	
 
 	void DirectionalHitReact(const FVector& ImpactPoint);
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
@@ -44,11 +50,18 @@ protected:
 	EDeathPose DeathPose = EDeathPose::EDP_Alive;
 private:
 
+	/**
+	 * Components
+	 */
+	
 	UPROPERTY(VisibleAnywhere)
 	UAttributeComponent* Attributes;
 
 	UPROPERTY(VisibleAnywhere)
 	UHealthBarComponent* HealthBarWidget;
+
+	UPROPERTY(VisibleAnywhere)
+	UPawnSensingComponent* PawnSensing;
 	
 	/**
 	 * Animation montages

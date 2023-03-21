@@ -10,6 +10,7 @@
 #include "HUD/HealthBarComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Perception/PawnSensingComponent.h"
 #include "Slash/DebugMacro.h"
 
 // Sets default values
@@ -32,6 +33,10 @@ AEnemy::AEnemy()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
+
+	PawnSensing = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("Pawn Sensing"));
+	PawnSensing->SightRadius = 4000.f;
+	PawnSensing->SetPeripheralVisionAngle(45.f);
 }
 
 // Called when the game starts or when spawned
@@ -45,6 +50,11 @@ void AEnemy::BeginPlay()
 
 	EnemyController = Cast<AAIController>(GetController());
 	MoveToTarget(PatrolTarget);
+
+	if(PawnSensing)
+	{
+		PawnSensing->OnSeePawn.AddDynamic(this,&AEnemy::PawnSee);
+	}
 }
 
 void AEnemy::PlayHitReactMontage(const FName& SectionName)
@@ -153,6 +163,11 @@ void AEnemy::CheckPatrolTarget()
 		const float WatiTime = FMath::RandRange(WaitMin,WaitMax);
 		GetWorldTimerManager().SetTimer(PatrolTimer,this,&AEnemy::PatrolTimerFinished,WatiTime);
 	}
+}
+
+void AEnemy::PawnSee(APawn* SeePawn)
+{
+	UE_LOG(LogTemp,Warning,TEXT("Pawn See"));
 }
 
 // Called every frame
