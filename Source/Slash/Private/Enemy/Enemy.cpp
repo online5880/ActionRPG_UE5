@@ -4,6 +4,7 @@
 #include "Enemy/Enemy.h"
 
 #include "AIController.h"
+#include "Characters/SlashCharacter.h"
 #include "Component/AttributeComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -167,7 +168,17 @@ void AEnemy::CheckPatrolTarget()
 
 void AEnemy::PawnSee(APawn* SeePawn)
 {
-	UE_LOG(LogTemp,Warning,TEXT("Pawn See"));
+	if(EnemyState == EEnemyState::EES_Chasing) return;
+	
+	if(SeePawn->ActorHasTag(FName("SlashCharacter")))
+	{
+		EnemyState = EEnemyState::EES_Chasing;
+		GetWorldTimerManager().ClearTimer(PatrolTimer);
+		GetCharacterMovement()->MaxWalkSpeed = 300.f;
+		CombatTarget = SeePawn;
+		MoveToTarget(CombatTarget);
+		UE_LOG(LogTemp,Warning,TEXT("Seen Pawn, now Chasing"));
+	}
 }
 
 // Called every frame
@@ -175,8 +186,14 @@ void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	CheckCombatTarget();
-	CheckPatrolTarget();
+	if(EnemyState > EEnemyState::EES_Patrolling)
+	{
+		CheckCombatTarget();
+	}
+	else
+	{
+		CheckPatrolTarget();	
+	}
 }
 
 // Called to bind functionality to input
