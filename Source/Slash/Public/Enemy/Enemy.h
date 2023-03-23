@@ -36,6 +36,7 @@ protected:
 	UFUNCTION()
 	void PawnSee(APawn* SeePawn);
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	virtual void Destroyed() override;
 
 	UPROPERTY(BlueprintReadOnly)
 	EDeathPose DeathPose = EDeathPose::EDP_Alive;
@@ -46,6 +47,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	UPawnSensingComponent* PawnSensing;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AWeapon> WeaponClass;
 	
 	UPROPERTY()
 	AActor* CombatTarget;
