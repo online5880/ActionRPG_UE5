@@ -37,6 +37,8 @@ protected:
 	void PawnSee(APawn* SeePawn);
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void Destroyed() override;
+	virtual void Attack() override;
+	virtual void PlayAttackMontage() override;
 
 	UPROPERTY(BlueprintReadOnly)
 	EDeathPose DeathPose = EDeathPose::EDP_Alive;
