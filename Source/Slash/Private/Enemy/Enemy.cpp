@@ -53,7 +53,7 @@ void AEnemy::BeginPlay()
 
 	if(PawnSensing)
 	{
-		PawnSensing->OnSeePawn.AddDynamic(this,&AEnemy::PawnSee);
+		PawnSensing->OnSeePawn.AddDynamic(this,&AEnemy::PawnSeen);
 	}
 
 	UWorld* World = GetWorld();
@@ -141,31 +141,20 @@ AActor* AEnemy::ChoosePatrolTarget()
 
 void AEnemy::CheckCombatTarget()
 {
-	if(!InTargetRange(CombatTarget,CombatRadius))
+	if(IsOutsideCombatRadius())
 	{
-		// outside combat radius, lose interest
-		CombatTarget = nullptr;
-		if(HealthBarWidget)
-		{
-			HealthBarWidget->SetVisibility(false);
-		}
-		EnemyState = EEnemyState::EES_Patrolling;
-		GetCharacterMovement()->MaxWalkSpeed = 125.f;
-		MoveToTarget(PatrolTarget);
+		ClearAttackTimer();
+		LoseInterest();
+		if(IsEngaged())	{StartPatrolling();	}
 	}
-	else if(!InTargetRange(CombatTarget,AttackRadius) && EnemyState != EEnemyState::EES_Chasing)
+	else if(IsOutsideAttackRadius() && !IsChasing())
 	{
-		// Outside attack range, chase character
-		EnemyState = EEnemyState::EES_Chasing;
-		GetCharacterMovement()->MaxWalkSpeed = 300.f;
-		MoveToTarget(CombatTarget);
+		ClearAttackTimer();
+		if(!IsEngaged()) ChaseTarget();
 	}
-	else if(InTargetRange(CombatTarget,AttackRadius) && EnemyState != EEnemyState::EES_Attacking)
+	else if(CanAttack())
 	{
-		// Inside attack range, attack character
-		EnemyState = EEnemyState::EES_Attacking;
-		// TODO : Attack montage
-		Attack();
+		StartAttackTimer();
 	}
 }
 
@@ -179,22 +168,20 @@ void AEnemy::CheckPatrolTarget()
 	}
 }
 
-void AEnemy::PawnSee(APawn* SeePawn)
+void AEnemy::PawnSeen(APawn* SeePawn)
 {
-	if(EnemyState == EEnemyState::EES_Chasing) return;
-	
-	if(SeePawn->ActorHasTag(FName("SlashCharacter")))
-	{
-		GetWorldTimerManager().ClearTimer(PatrolTimer);
-		GetCharacterMovement()->MaxWalkSpeed = 300.f;
-		CombatTarget = SeePawn;
+	const bool bShouldChaseTarget =
+			EnemyState != EEnemyState::ESS_Dead &&
+				EnemyState != EEnemyState::EES_Chasing &&
+					EnemyState < EEnemyState::EES_Chasing &&
+						SeePawn->ActorHasTag(FName("SlashCharacter"));
 
-		if(EnemyState != EEnemyState::EES_Attacking)
-		{
-			EnemyState = EEnemyState::EES_Chasing;
-			MoveToTarget(CombatTarget);
-		}
-	};
+	if(bShouldChaseTarget)
+	{
+		CombatTarget = SeePawn;
+		ClearPatrolTimer();
+		ChaseTarget();
+	}
 }
 
 // Called every frame
@@ -202,6 +189,8 @@ void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if(IsDead()) return;
+	
 	if(EnemyState > EEnemyState::EES_Patrolling)
 	{
 		CheckCombatTarget();
@@ -212,25 +201,12 @@ void AEnemy::Tick(float DeltaTime)
 	}
 }
 
-// Called to bind functionality to input
-void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
-
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	AActor* DamageCauser)
 {
-	if(Attributes && HealthBarWidget)
-	{
-		Attributes->ReceiveDamage(DamageAmount);
-		HealthBarWidget->SetHealthPercent(Attributes->GetHealthPercent());
-	}
+	HandleDamage(DamageAmount);
 	CombatTarget = EventInstigator->GetPawn();
-	EnemyState = EEnemyState::EES_Chasing;
-	GetCharacterMovement()->MaxWalkSpeed = 300.f;
-	MoveToTarget(CombatTarget);
+	ChaseTarget();
 	return DamageAmount;
 }
 
@@ -274,19 +250,128 @@ void AEnemy::PlayAttackMontage()
 	}
 }
 
+bool AEnemy::CanAttack()
+{
+	const bool bCanAttack =
+		IsInsideAttackRadius() &&
+			!IsAttacking() &&
+				!IsDead();
+ 	return bCanAttack;
+}
+
+void AEnemy::HandleDamage(float DamageAmount)
+{
+	Super::HandleDamage(DamageAmount);
+	
+	if(Attributes && HealthBarWidget)
+	{
+		HealthBarWidget->SetHealthPercent(Attributes->GetHealthPercent());
+	}
+}
+
+bool AEnemy::IsAlive()
+{
+	return Attributes && Attributes->IsAlive();
+}
+
 void AEnemy::PatrolTimerFinished()
 {
 	MoveToTarget(PatrolTarget);
 }
 
-void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
+void AEnemy::HideHealthBar()
+{
+	if(HealthBarWidget)
+	{
+		HealthBarWidget->SetVisibility(false);
+	}
+}
+
+void AEnemy::ShowHealthBar()
 {
 	if(HealthBarWidget)
 	{
 		HealthBarWidget->SetVisibility(true);
 	}
+}
+
+void AEnemy::LoseInterest()
+{
+	CombatTarget = nullptr;
+	HideHealthBar();
+}
+
+void AEnemy::StartPatrolling()
+{
+	EnemyState = EEnemyState::EES_Patrolling;
+	GetCharacterMovement()->MaxWalkSpeed = 125.f;
+	MoveToTarget(PatrolTarget);
+}
+
+void AEnemy::ChaseTarget()
+{
+	EnemyState = EEnemyState::EES_Chasing;
+	GetCharacterMovement()->MaxWalkSpeed = ChasingSpeed;
+	MoveToTarget(CombatTarget);
+}
+
+bool AEnemy::IsOutsideCombatRadius()
+{
+	return !InTargetRange(CombatTarget,CombatRadius);
+}
+
+bool AEnemy::IsOutsideAttackRadius()
+{
+	return !InTargetRange(CombatTarget,AttackRadius);
+}
+
+bool AEnemy::IsInsideAttackRadius()
+{
+	return InTargetRange(CombatTarget,AttackRadius);
+}
+
+bool AEnemy::IsChasing()
+{
+	return EnemyState == EEnemyState::EES_Chasing;
+}
+
+bool AEnemy::IsAttacking()
+{
+	return EnemyState == EEnemyState::EES_Attacking;
+}
+
+bool AEnemy::IsDead()
+{
+	return EnemyState == EEnemyState::ESS_Dead;
+}
+
+bool AEnemy::IsEngaged()
+{
+	return EnemyState == EEnemyState::EES_Engaged;
+}
+
+void AEnemy::ClearPatrolTimer()
+{
+	GetWorldTimerManager().ClearTimer(PatrolTimer);
+}
+
+void AEnemy::StartAttackTimer()
+{
+	EnemyState = EEnemyState::EES_Attacking;
+	const float AttackTime = FMath::RandRange(AttackMin,AttackMax);
+	GetWorldTimerManager().SetTimer(AttackTimer,this,&AEnemy::Attack,AttackTime);
+}
+
+void AEnemy::ClearAttackTimer()
+{
+	GetWorldTimerManager().ClearTimer(AttackTimer);
+}
+
+void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
+{
+	ShowHealthBar();
 	
-	if(Attributes && Attributes->IsAlive())
+	if(IsAlive())
 	{
 		DirectionalHitReact(ImpactPoint);	
 	}
@@ -294,21 +379,8 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 	{
 		Die();
 	}
-	
-	if(HitSound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(
-			this,
-			HitSound,
-			ImpactPoint);
-	}
-	if(HitParticles)
-	{
-		UGameplayStatics::SpawnEmitterAtLocation(
-			this,
-			HitParticles,
-			ImpactPoint
-			);
-	}
+
+	PlayHitSound(ImpactPoint);
+	SpawnHitParticles(ImpactPoint);
 }
 
