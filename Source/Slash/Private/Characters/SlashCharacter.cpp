@@ -105,29 +105,6 @@ void ASlashCharacter::Attack(const FInputActionValue& Value)
 	}
 }
 
-void ASlashCharacter::PlayAttackMontage()
-{
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if(AnimInstance)
-	{
-		AnimInstance->Montage_Play(AttackMontage,1.f);
-		const int32 Section = FMath::RandRange(0,1);
-		FName SectionName = FName();
-		switch (Section)
-		{
-		case 0:
-			SectionName = FName("Attack1");
-			break;
-		case 1:
-			SectionName = FName("Attack2");
-			break;
-		default:
-			break;
-		}
-		AnimInstance->Montage_JumpToSection(SectionName, AttackMontage);
-	}
-}
-
 void ASlashCharacter::PlayEquipMontage(const FName& SectionName)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
