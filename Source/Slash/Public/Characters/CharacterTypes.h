@@ -23,13 +23,13 @@ enum EDeathPose
 	EDP_Death2 UMETA(DisplayName ="Death2"),
 	EDP_Death3 UMETA(DisplayName ="Death3"),
 
-	DEP_Max UMETA(DisplayName = "DefaultMAX")
+	EDP_MAX UMETA(DisplayName = "DefaultMAX")
 };
 
 UENUM(BlueprintType)
 enum class EEnemyState : uint8
 {
-	ESS_Dead UMETA(DisplayName = "Dead"),
+	EES_Dead UMETA(DisplayName = "Dead"),
 	EES_Patrolling UMETA(DisplayName = "Patrolling"),
 	EES_Chasing UMETA(DisplayName = "Chasing"),
 	EES_Attacking UMETA(DisplayName = "Attacking"),
