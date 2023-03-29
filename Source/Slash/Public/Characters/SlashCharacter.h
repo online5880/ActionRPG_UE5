@@ -60,6 +60,8 @@ protected:
 	virtual bool CanAttack() override;
 	bool CanDisarm();
 	bool CanArm();
+	void Disarm();
+	void Arm();
 	void PlayEquipMontage(const FName& SectionName);
 	
 	UFUNCTION(BlueprintCallable)

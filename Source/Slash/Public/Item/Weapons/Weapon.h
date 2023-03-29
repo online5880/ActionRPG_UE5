@@ -16,6 +16,9 @@ class SLASH_API AWeapon : public AItem
 	GENERATED_BODY()
 public:
 	AWeapon();
+	void PlayEquipSound();
+	void DisableSphereCollision();
+	void DeactivateEmbers();
 	void Equip(USceneComponent* InParents, FName InSocketName, AActor* NewOwner, APawn* NewInstigator);
 	void AttachMeshToSocket(USceneComponent* InParents, FName InSocketName);
 	

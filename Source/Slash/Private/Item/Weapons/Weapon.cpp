@@ -27,28 +27,45 @@ AWeapon::AWeapon()
 	BoxTraceEnd->SetupAttachment(GetRootComponent());
 }
 
-void AWeapon::Equip(USceneComponent* InParents, FName InSocketName, AActor* NewOwner, APawn* NewInstigator)
+void AWeapon::PlayEquipSound()
 {
-	SetOwner(NewOwner);
-	SetInstigator(NewInstigator);
-	AttachMeshToSocket(InParents, InSocketName);
-	ItemState = EItemState::EIS_Equipeped;
 	if(EquipSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(
 			this,
 			EquipSound,
 			GetActorLocation()
-			);
+		);
 	}
+}
+
+void AWeapon::DisableSphereCollision()
+{
 	if(Sphere)
 	{
 		Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
+}
+
+void AWeapon::DeactivateEmbers()
+{
 	if(EmbersEffect)
 	{
 		EmbersEffect->Deactivate();
 	}
+}
+
+void AWeapon::Equip(USceneComponent* InParents, FName InSocketName, AActor* NewOwner, APawn* NewInstigator)
+{
+	SetOwner(NewOwner);
+	SetInstigator(NewInstigator);
+	AttachMeshToSocket(InParents, InSocketName);
+	ItemState = EItemState::EIS_Equipeped;
+	PlayEquipSound();
+	
+	DisableSphereCollision();
+	
+	DeactivateEmbers();
 }
 
 void AWeapon::AttachMeshToSocket(USceneComponent* InParents, FName InSocketName)
