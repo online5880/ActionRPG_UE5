@@ -20,6 +20,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 protected:
+	/** Combat **/
 	virtual void BeginPlay() override;
 	virtual void GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter) override;
 	virtual void Attack();
@@ -31,9 +32,12 @@ protected:
 	void DisableCapsule();
 	virtual bool CanAttack();
 	bool IsAlive();
+
+	/** Montage **/
 	void PlayHitReactMontage(const FName& SectionName);
 	virtual int32 PlayAttackMontage();
 	virtual int32 PlayDeathMontage();
+	void StopAttackMontage();
 
 	UFUNCTION(BlueprintCallable)
 	virtual void AttackEnd();
