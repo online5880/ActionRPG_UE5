@@ -31,7 +31,7 @@ void ABreakableActor::BeginPlay()
 	Super::BeginPlay();
 }
 
-void ABreakableActor::GetHit_Implementation(const FVector& ImpactPoint)
+void ABreakableActor::GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter)
 {
 	if(bBroken) return;
 	bBroken = true;

@@ -46,10 +46,10 @@ void AEnemy::Destroyed()
 	}
 }
 
-void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
+void AEnemy::GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter)
 {
-	Super::GetHit_Implementation(ImpactPoint);
-	if(!IsDead()) {ShowHealthBar()};
+	Super::GetHit_Implementation(ImpactPoint, Hitter);
+	if(!IsDead()) {ShowHealthBar();}
 	ClearPatrolTimer();
 }
 
