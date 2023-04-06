@@ -40,4 +40,5 @@ void USlashOverlay::SetSouls(int32 Souls)
 		const FText Text = FText::FromString(String);
 		SoulsText->SetText(Text);
 	}
+	
 }
