@@ -8,6 +8,7 @@
 #include "InputActionValue.h"
 #include "SlashCharacter.generated.h"
 
+class USlashOverlay;
 class AItem;
 class UInputAction;
 class UInputMappingContext;
@@ -25,6 +26,7 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter) override;
 	virtual void Jump() override;
+	
 
 protected:
 	virtual void BeginPlay() override;
@@ -76,6 +78,8 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void HitReactEnd();
+
+	void InitializeSlashOverlay();
 private:
 	/** Character Components */
 	UPROPERTY(VisibleAnywhere)
@@ -94,7 +98,9 @@ private:
 
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess ="true"))
 	EActionState ActionState = EActionState::EAS_Unoccupied;
-	
+
+	UPROPERTY()
+	USlashOverlay* SlashOverlay;
 public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) {OverlappingItem = Item;}
 	FORCEINLINE ECharacterState GetCharacterType() const {return CharacterState;}

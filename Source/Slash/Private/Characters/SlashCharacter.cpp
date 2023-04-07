@@ -5,8 +5,11 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
+#include "Component/AttributeComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "HUD/SlashHUD.h"
+#include "HUD/SlashOverlay.h"
 #include "Item/Weapons/Weapon.h"
 
 
@@ -82,6 +85,8 @@ void ASlashCharacter::BeginPlay()
 	}
 
 	Tags.Add(FName("EngageableTarget"));
+
+	InitializeSlashOverlay();
 }
 
 void ASlashCharacter::Move(const FInputActionValue& Value)
@@ -217,4 +222,24 @@ void ASlashCharacter::FinishEquipping()
 void ASlashCharacter::HitReactEnd()
 {
 	ActionState = EActionState::EAS_Unoccupied;
+}
+
+void ASlashCharacter::InitializeSlashOverlay()
+{
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if(PlayerController)
+	{
+		ASlashHUD* SlashHUD = Cast<ASlashHUD>(PlayerController->GetHUD());
+		if(SlashHUD)
+		{
+			SlashOverlay = SlashHUD->GetSlashOverlay();
+			if(SlashOverlay)
+			{
+				SlashOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
+				SlashOverlay->SetStaminaBarPercent(1.f);
+				SlashOverlay->SetGold(0);
+				SlashOverlay->SetSouls(0);
+			}
+		}
+	}
 }
