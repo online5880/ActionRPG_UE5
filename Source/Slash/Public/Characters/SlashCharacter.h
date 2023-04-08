@@ -79,8 +79,12 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void HitReactEnd();
 
-	void InitializeSlashOverlay();
 private:
+
+	bool IsUnoccupied();
+	void InitializeSlashOverlay();
+	void SetHUDHealth();
+	
 	/** Character Components */
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* CameraBoom;
