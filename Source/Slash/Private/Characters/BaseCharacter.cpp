@@ -3,22 +3,18 @@
 
 #include "Characters/BaseCharacter.h"
 
-#include "Characters/CharacterTypes.h"
 #include "Component/AttributeComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Item/Weapons/Weapon.h"
 #include "Kismet/GameplayStatics.h"
-#include "Slash/DebugMacro.h"
 
 ABaseCharacter::ABaseCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
 	Attributes = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attributes"));
-
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
-	
 }
 
 void ABaseCharacter::BeginPlay()
@@ -29,7 +25,7 @@ void ABaseCharacter::BeginPlay()
 
 void ABaseCharacter::GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter)
 {
-	if (IsAlive() && Hitter) 
+	if (IsAlive() && Hitter)
 	{
 		DirectionalHitReact(Hitter->GetActorLocation());
 	}
@@ -41,64 +37,11 @@ void ABaseCharacter::GetHit_Implementation(const FVector& ImpactPoint, AActor* H
 
 void ABaseCharacter::Attack()
 {
-	
 }
 
 void ABaseCharacter::Die()
 {
 	PlayDeathMontage();
-}
-
-int32 ABaseCharacter::PlayAttackMontage()
-{
-	return PlayRandomMontageSection(AttackMontage, AttackMontageSections);
-}
-
-int32 ABaseCharacter::PlayDeathMontage()
-{
-	const int32 Selection = PlayRandomMontageSection(DeathMontage, DeathMontageSections);
-	TEnumAsByte<EDeathPose> Pose(Selection);
-	if (Pose < EDeathPose::EDP_MAX)
-	{
-		DeathPose = Pose;
-	}
-	
-	return Selection;
-}
-
-void ABaseCharacter::StopAttackMontage()
-{
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if(AnimInstance)
-	{
-		AnimInstance->Montage_Stop(0.25f);
-	}
-}
-
-FVector ABaseCharacter::GetTranslationWarpTarget()
-{
-	if(CombatTarget == nullptr) return FVector();
-
-	const FVector CombatTargetLocation = CombatTarget->GetActorLocation();
-	const FVector Location = GetActorLocation();
-
-	FVector TargetToMe = (Location - CombatTargetLocation).GetSafeNormal();
-	TargetToMe *= WarpTargetDistance;
-	return CombatTargetLocation + TargetToMe;
-}
-
-FVector ABaseCharacter::GetRotationWarpTarget()
-{
-	if(CombatTarget)
-	{
-		return CombatTarget->GetActorLocation();
-	}
-	return FVector();
-}
-
-void ABaseCharacter::DisableCapsule()
-{
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ABaseCharacter::PlayHitReactMontage(const FName& SectionName)
@@ -115,35 +58,35 @@ void ABaseCharacter::DirectionalHitReact(const FVector& ImpactPoint)
 {
 	const FVector Forward = GetActorForwardVector();
 	// Lower Impact Point to the Enemy's Actor Location Z
-	const FVector ImpactLowered(ImpactPoint.X,ImpactPoint.Y,GetActorLocation().Z);
+	const FVector ImpactLowered(ImpactPoint.X, ImpactPoint.Y, GetActorLocation().Z);
 	const FVector ToHit = (ImpactLowered - GetActorLocation()).GetSafeNormal();
 
 	// Forward * ToHit = |Forward||ToHit| * cos(theta)
-	// |Forward| = 1, |ToHit| = 1, so forward * ToHit = cos(theta)
-	const double CosTheta = FVector::DotProduct(Forward,ToHit);
+	// |Forward| = 1, |ToHit| = 1, so Forward * ToHit = cos(theta)
+	const double CosTheta = FVector::DotProduct(Forward, ToHit);
 	// Take the inverse cosine (arc-cosine) of cos(theta) to get theta
 	double Theta = FMath::Acos(CosTheta);
 	// convert from radians to degrees
 	Theta = FMath::RadiansToDegrees(Theta);
 
-	// If CrossProduct points down, Theta should be negative
-	const FVector CrossProduct = FVector::CrossProduct(Forward,ToHit);
-	if(CrossProduct.Z < 0)
+	// if CrossProduct points down, Theta should be negative
+	const FVector CrossProduct = FVector::CrossProduct(Forward, ToHit);
+	if (CrossProduct.Z < 0)
 	{
 		Theta *= -1.f;
 	}
 
 	FName Section("FromBack");
 
-	if(Theta >= -45.f && Theta < 45.f)
+	if (Theta >= -45.f && Theta < 45.f)
 	{
 		Section = FName("FromFront");
 	}
-	else if(Theta >= -135.f && Theta < -45.f)
+	else if (Theta >= -135.f && Theta < -45.f)
 	{
 		Section = FName("FromLeft");
 	}
-	else if(Theta >= 45.f && Theta < 135.f)
+	else if (Theta >= 45.f && Theta < 135.f)
 	{
 		Section = FName("FromRight");
 	}
@@ -153,30 +96,31 @@ void ABaseCharacter::DirectionalHitReact(const FVector& ImpactPoint)
 
 void ABaseCharacter::PlayHitSound(const FVector& ImpactPoint)
 {
-	if(HitSound)
+	if (HitSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(
 			this,
 			HitSound,
-			ImpactPoint);
+			ImpactPoint
+		);
 	}
 }
 
 void ABaseCharacter::SpawnHitParticles(const FVector& ImpactPoint)
 {
-	if(HitParticles)
+	if (HitParticles && GetWorld())
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(
-			this,
+			GetWorld(),
 			HitParticles,
 			ImpactPoint
-			);
+		);
 	}
 }
 
 void ABaseCharacter::HandleDamage(float DamageAmount)
 {
-	if(Attributes)
+	if (Attributes)
 	{
 		Attributes->ReceiveDamage(DamageAmount);
 	}
@@ -185,7 +129,7 @@ void ABaseCharacter::HandleDamage(float DamageAmount)
 void ABaseCharacter::PlayMontageSection(UAnimMontage* Montage, const FName& SectionName)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if(AnimInstance && Montage)
+	if (AnimInstance && Montage)
 	{
 		AnimInstance->Montage_Play(Montage);
 		AnimInstance->Montage_JumpToSection(SectionName, Montage);
@@ -194,11 +138,64 @@ void ABaseCharacter::PlayMontageSection(UAnimMontage* Montage, const FName& Sect
 
 int32 ABaseCharacter::PlayRandomMontageSection(UAnimMontage* Montage, const TArray<FName>& SectionNames)
 {
-	if(SectionNames.Num() <= 0) return -1;
-	const int32 MaxSectionIndex = SectionNames.Num() -1;
-	const int32 Selection = FMath::RandRange(0,MaxSectionIndex);
-	PlayMontageSection(Montage,SectionNames[Selection]);
+	if (SectionNames.Num() <= 0) return -1;
+	const int32 MaxSectionIndex = SectionNames.Num() - 1;
+	const int32 Selection = FMath::RandRange(0, MaxSectionIndex);
+	PlayMontageSection(Montage, SectionNames[Selection]);
 	return Selection;
+}
+
+int32 ABaseCharacter::PlayAttackMontage()
+{
+	return PlayRandomMontageSection(AttackMontage, AttackMontageSections);
+}
+
+int32 ABaseCharacter::PlayDeathMontage()
+{
+	const int32 Selection = PlayRandomMontageSection(DeathMontage, DeathMontageSections);
+	TEnumAsByte<EDeathPose> Pose(Selection);
+	if (Pose < EDeathPose::EDP_MAX)
+	{
+		DeathPose = Pose;
+	}
+
+	return Selection;
+}
+
+void ABaseCharacter::StopAttackMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance)
+	{
+		AnimInstance->Montage_Stop(0.25f, AttackMontage);
+	}
+}
+
+FVector ABaseCharacter::GetTranslationWarpTarget()
+{
+	if (CombatTarget == nullptr) return FVector();
+
+	const FVector CombatTargetLocation = CombatTarget->GetActorLocation();
+	const FVector Location = GetActorLocation();
+
+	FVector TargetToMe = (Location - CombatTargetLocation).GetSafeNormal();
+	TargetToMe *= WarpTargetDistance;
+	return CombatTargetLocation + TargetToMe;
+
+}
+
+FVector ABaseCharacter::GetRotationWarpTarget()
+{
+	if (CombatTarget)
+	{
+		return CombatTarget->GetActorLocation();
+	}
+	return FVector();
+}
+
+void ABaseCharacter::DisableCapsule()
+{
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 bool ABaseCharacter::CanAttack()
@@ -226,13 +223,12 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 }
 
-void ABaseCharacter::SetWeaponCollision(ECollisionEnabled::Type CollisionEnabled)
+void ABaseCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnabled)
 {
-	if(EquippedWeapon && EquippedWeapon->GetWeaponBox())
+	if (EquippedWeapon && EquippedWeapon->GetWeaponBox())
 	{
 		EquippedWeapon->GetWeaponBox()->SetCollisionEnabled(CollisionEnabled);
 		EquippedWeapon->IgnoreActors.Empty();
 	}
 }
-
 
