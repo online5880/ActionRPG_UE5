@@ -60,19 +60,19 @@ float AItem::TransformedCos()
 void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	ASlashCharacter* SlashCharacter = Cast<ASlashCharacter>(OtherActor);
-	if(SlashCharacter)
+	IPickupInterface* HitInterface = Cast<IPickupInterface>(OtherActor);
+	if(HitInterface)
 	{
-		SlashCharacter->SetOverlappingItem(this);
+		HitInterface->SetOverlappingItem(this);
 	}
 }
 
 void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	ASlashCharacter* SlashCharacter = Cast<ASlashCharacter>(OtherActor);
-	if(SlashCharacter)
+	IPickupInterface* HitInterface = Cast<IPickupInterface>(OtherActor);
+	if(HitInterface)
 	{
-		SlashCharacter->SetOverlappingItem(nullptr);
+		HitInterface->SetOverlappingItem(nullptr);
 	}
 }
