@@ -4,6 +4,8 @@
 #include "NiagaraComponent.h"
 #include "Characters/SlashCharacter.h"
 #include "Components/SphereComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "Slash/DebugMacro.h"
 
 // Sets default values
@@ -74,5 +76,26 @@ void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 	if(HitInterface)
 	{
 		HitInterface->SetOverlappingItem(nullptr);
+	}
+}
+
+void AItem::SpawnPickupSystem()
+{
+	if(PickupEffect)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			this,
+			PickupEffect,
+			GetActorLocation());
+	}}
+
+void AItem::SpawnPickupSound()
+{
+	if(PickupSound)
+	{
+		UGameplayStatics::SpawnSoundAtLocation(
+			this,
+			PickupSound,
+			GetActorLocation());
 	}
 }
