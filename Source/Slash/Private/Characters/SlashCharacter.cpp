@@ -51,6 +51,7 @@ void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		EnhancedInputComponent->BindAction(JumpAction,ETriggerEvent::Triggered,this,&ASlashCharacter::Jump);
 		EnhancedInputComponent->BindAction(EKeyAction,ETriggerEvent::Started,this,&ASlashCharacter::EKeyPressed);
 		EnhancedInputComponent->BindAction(AttackAction,ETriggerEvent::Triggered,this,&ASlashCharacter::Attack);
+		EnhancedInputComponent->BindAction(DodgeAction,ETriggerEvent::Triggered,this,&ASlashCharacter::Dodge);
 	}
 }
 
@@ -171,6 +172,11 @@ void ASlashCharacter::Attack(const FInputActionValue& Value)
 		PlayAttackMontage();
 		ActionState = EActionState::EAS_Attacking;
 	}
+}
+
+void ASlashCharacter::Dodge(const FInputActionValue& Value)
+{
+	PlayDodgeMontage();
 }
 
 void ASlashCharacter::EquipWeapon(AWeapon* Weapon)

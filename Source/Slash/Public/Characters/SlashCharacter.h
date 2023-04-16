@@ -51,13 +51,17 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* AttackAction;
 
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* DodgeAction;
+
 	/**
 	 * Callbacks for input
 	 */
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void EKeyPressed(const FInputActionValue& Value);
-	virtual void Attack(const FInputActionValue& Value);
+	void Attack(const FInputActionValue& Value);
+	void Dodge(const FInputActionValue& Value);
 
 	/** Combat */
 	void EquipWeapon(AWeapon* Weapon);
