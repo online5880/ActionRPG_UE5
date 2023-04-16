@@ -10,6 +10,7 @@
 #include "Perception/PawnSensingComponent.h"
 #include "HUD/HealthBarComponent.h"
 #include "Item/Weapons/Weapon.h"
+#include "Items/Soul.h"
 
 AEnemy::AEnemy()
 {
@@ -104,6 +105,22 @@ void AEnemy::Die()
 	SetLifeSpan(DeathLifeSpan);
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	SpawnSoul();
+}
+
+
+void AEnemy::SpawnSoul()
+{
+	UWorld* World =GetWorld();
+	if(World && SoulClass && Attributes)
+	{
+		ASoul* SpawnSoul =  World->SpawnActor<ASoul>(SoulClass,GetActorLocation(),GetActorRotation());
+		if(SpawnSoul)
+		{
+			SpawnSoul->SetSouls(Attributes->GetSouls());	
+		}
+	}
 }
 
 void AEnemy::Attack()
