@@ -14,7 +14,6 @@
 #include "Item/Weapons/Weapon.h"
 #include "Items/Soul.h"
 
-
 ASlashCharacter::ASlashCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -38,6 +37,16 @@ ASlashCharacter::ASlashCharacter()
 
 	ViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ViewCamera"));
 	ViewCamera->SetupAttachment(CameraBoom);
+}
+
+void ASlashCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds && SlashOverlay);
+	if(Attributes)
+	{
+		Attributes->RegenStamina(DeltaSeconds);
+		SlashOverlay->SetStaminaBarPercent(Attributes->GetStaminaPercent());
+	}
 }
 
 void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -176,9 +185,15 @@ void ASlashCharacter::Attack(const FInputActionValue& Value)
 
 void ASlashCharacter::Dodge(const FInputActionValue& Value)
 {
-	if(ActionState != EActionState::EAS_Unoccupied) return;
+	if(IsOccupied() || !HasEnoughStamina()) return;
+	
 	PlayDodgeMontage();
 	ActionState = EActionState::EAS_Dodge;
+	if(Attributes && SlashOverlay)
+	{
+		Attributes->UseStamina(Attributes->GetDodgeCost());
+		SlashOverlay->SetStaminaBarPercent(Attributes->GetStaminaPercent());
+	}
 }
 
 void ASlashCharacter::EquipWeapon(AWeapon* Weapon)
@@ -252,6 +267,15 @@ void ASlashCharacter::Die()
 	DisableMeshCollision();
 }
 
+bool ASlashCharacter::IsOccupied()
+{
+	return ActionState != EActionState::EAS_Unoccupied;
+}
+
+bool ASlashCharacter::HasEnoughStamina()
+{
+	return Attributes && Attributes->GetStaminaPercent() > Attributes->GetDodgeCost();
+}
 
 void ASlashCharacter::AttachWeaponToBack()
 {
